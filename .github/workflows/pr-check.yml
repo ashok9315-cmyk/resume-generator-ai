@@ -157,31 +157,31 @@ jobs:
       run: |
         echo "🔍 Checking for potential secrets..."
         
-        # Check for Anthropic API keys (but exclude documentation examples)
-        if grep -r "sk-ant-api" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=out --exclude-dir=.next --exclude="*.md" --exclude="GITHUB_SECRETS_SETUP.md"; then
+        # Check for Anthropic API keys (exclude workflow files and documentation)
+        if grep -r "sk-ant-api" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=out --exclude-dir=.next --exclude-dir=.github --exclude="*.md"; then
           echo "❌ Found potential API keys in code!"
           exit 1
         fi
         
-        # Check for LangChain API keys (but exclude documentation)
-        if grep -r "lsv2_pt_" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=out --exclude-dir=.next --exclude="*.md" --exclude="GITHUB_SECRETS_SETUP.md"; then
+        # Check for LangChain API keys (exclude workflow files and documentation)
+        if grep -r "lsv2_pt_" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=out --exclude-dir=.next --exclude-dir=.github --exclude="*.md"; then
           echo "❌ Found potential LangChain keys in code!"
           exit 1
         fi
         
-        # Check for AWS access keys
-        if grep -r "AKIA[0-9A-Z]\{16\}" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=out --exclude-dir=.next --exclude="*.md"; then
+        # Check for AWS access keys (exclude workflow files)
+        if grep -r "AKIA[0-9A-Z]\{16\}" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=out --exclude-dir=.next --exclude-dir=.github --exclude="*.md"; then
           echo "❌ Found potential AWS access keys in code!"
           exit 1
         fi
         
-        # Check for AWS secret keys pattern
-        if grep -r "[A-Za-z0-9/+=]\{40\}" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=out --exclude-dir=.next --exclude="*.md" | grep -v "package-lock.json" | head -1; then
+        # Check for AWS secret keys pattern (exclude workflow files and package locks)
+        if grep -r "[A-Za-z0-9/+=]\{40\}" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=out --exclude-dir=.next --exclude-dir=.github --exclude="*.md" --exclude="package-lock.json" | head -1; then
           echo "⚠️  Found potential long secrets (could be AWS secret keys)"
           echo "Please review the above matches manually"
         fi
         
-        echo "✅ No obvious hardcoded secrets found"
+        echo "✅ No obvious hardcoded secrets found in source code"
 
   # Documentation Check
   docs-check:

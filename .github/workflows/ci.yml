@@ -100,27 +100,27 @@ jobs:
       
     - name: Check for hardcoded secrets
       run: |
-        echo "Checking for potential hardcoded secrets..."
+        echo "🔍 Checking for potential hardcoded secrets..."
         
-        # Check for Anthropic API keys
-        if grep -r "sk-ant-api" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=out --exclude-dir=.next; then
+        # Check for Anthropic API keys (exclude workflow files and documentation)
+        if grep -r "sk-ant-api" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=out --exclude-dir=.next --exclude-dir=.github --exclude="*.md"; then
           echo "❌ Found potential Anthropic API keys in code!"
           exit 1
         fi
         
-        # Check for LangChain API keys
-        if grep -r "lsv2_pt_" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=out --exclude-dir=.next; then
-          echo "❌ Found potential LangChain API keys in code!"
+        # Check for LangChain API keys (exclude workflow files and documentation)
+        if grep -r "lsv2_pt_" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=out --exclude-dir=.next --exclude-dir=.github --exclude="*.md"; then
+          echo "❌ Found potential LangChain keys in code!"
           exit 1
         fi
         
-        # Check for AWS keys
-        if grep -r "AKIA[0-9A-Z]\{16\}" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=out --exclude-dir=.next; then
+        # Check for AWS keys (exclude workflow files)
+        if grep -r "AKIA[0-9A-Z]\{16\}" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=out --exclude-dir=.next --exclude-dir=.github --exclude="*.md"; then
           echo "❌ Found potential AWS access keys in code!"
           exit 1
         fi
         
-        echo "✅ No hardcoded secrets found"
+        echo "✅ No hardcoded secrets found in source code"
         
     - name: Run TruffleHog scan
       uses: trufflesecurity/trufflehog@main
