@@ -1,0 +1,56 @@
+{
+  "widgets": [
+    {
+      "type": "metric",
+      "properties": {
+        "metrics": [
+          ["AWS/Lambda", "Invocations", { "stat": "Sum" }],
+          [".", "Errors", { "stat": "Sum" }],
+          [".", "Duration", { "stat": "Average" }]
+        ],
+        "period": 300,
+        "stat": "Average",
+        "region": "us-east-1",
+        "title": "Lambda Performance"
+      }
+    },
+    {
+      "type": "log",
+      "properties": {
+        "query": "SOURCE '/aws/lambda/ats-resume-generateResume'\n| fields @timestamp, duration, tokensUsed\n| stats avg(duration), sum(tokensUsed) by bin(5m)",
+        "region": "us-east-1",
+        "title": "AI Token Usage"
+      }
+    },
+    {
+      "type": "metric",
+      "properties": {
+        "metrics": [
+          ["AWS/ApiGateway", "Count", { "stat": "Sum" }],
+          [".", "4XXError", { "stat": "Sum" }],
+          [".", "5XXError", { "stat": "Sum" }]
+        ],
+        "period": 300,
+        "stat": "Sum",
+        "region": "us-east-1",
+        "title": "API Gateway Metrics"
+      }
+    },
+    {
+      "type": "metric",
+      "properties": {
+        "metrics": [
+          ["ATSResumeBuilder", "processFileLatency", { "stat": "Average" }],
+          ["ATSResumeBuilder", "generateResumeLatency", { "stat": "Average" }],
+          ["ATSResumeBuilder", "generateCoverLetterLatency", { "stat": "Average" }]
+        ],
+        "period": 300,
+        "stat": "Average",
+        "region": "us-east-1",
+        "title": "Custom Application Metrics"
+      }
+    }
+  ]
+}
+
+

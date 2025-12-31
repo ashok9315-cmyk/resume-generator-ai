@@ -1,0 +1,15 @@
+John Doe
+Software Engineer
+john@email.com | (555) 123-4567
+
+EXPERIENCE
+Software Engineer at TechCorp (2020-2023)
+- Developed web applications
+- Led development team
+- Improved performance by 40%
+
+EDUCATION
+BS Computer Science, University (2016-2020)
+
+SKILLS
+JavaScript, React, Node.js, Python

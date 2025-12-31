@@ -1,0 +1,45 @@
+{
+  "alarms": [
+    {
+      "name": "ats-resume-error-rate",
+      "description": "Alert when error rate exceeds 5%",
+      "metric": {
+        "namespace": "AWS/Lambda",
+        "metricName": "Errors",
+        "statistic": "Sum",
+        "period": 300
+      },
+      "threshold": 5,
+      "evaluationPeriods": 1,
+      "comparisonOperator": "GreaterThanThreshold"
+    },
+    {
+      "name": "ats-resume-lambda-duration",
+      "description": "Alert when Lambda duration exceeds 25s (P95)",
+      "metric": {
+        "namespace": "AWS/Lambda",
+        "metricName": "Duration",
+        "statistic": "p95",
+        "period": 300
+      },
+      "threshold": 25000,
+      "evaluationPeriods": 2,
+      "comparisonOperator": "GreaterThanThreshold"
+    },
+    {
+      "name": "ats-resume-api-latency",
+      "description": "Alert when API latency exceeds 10s (P95)",
+      "metric": {
+        "namespace": "AWS/ApiGateway",
+        "metricName": "Latency",
+        "statistic": "p95",
+        "period": 300
+      },
+      "threshold": 10000,
+      "evaluationPeriods": 2,
+      "comparisonOperator": "GreaterThanThreshold"
+    }
+  ]
+}
+
+

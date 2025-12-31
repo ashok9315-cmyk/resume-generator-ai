@@ -1,0 +1,102 @@
+MICHAEL CHEN
+Senior Software Engineer & Technical Lead
+Email: michael.chen@email.com | Phone: (555) 123-4567
+LinkedIn: linkedin.com/in/michaelchen | GitHub: github.com/mchen
+Location: Seattle, WA
+
+PROFESSIONAL SUMMARY
+Experienced Senior Software Engineer with 8+ years of expertise in full-stack development, cloud architecture, and team leadership. Proven track record of designing and implementing scalable web applications serving millions of users. Expert in modern JavaScript frameworks, microservices architecture, and DevOps practices. Strong background in leading cross-functional teams and mentoring junior developers. Passionate about clean code, performance optimization, and emerging technologies.
+
+TECHNICAL SKILLS
+Programming Languages: JavaScript (ES6+), TypeScript, Python, Java, Go, C#, SQL
+Frontend Technologies: React, Vue.js, Angular, Next.js, HTML5, CSS3, SASS, Tailwind CSS, Bootstrap
+Backend Technologies: Node.js, Express.js, Django, Flask, Spring Boot, .NET Core, GraphQL, REST APIs
+Databases: PostgreSQL, MySQL, MongoDB, Redis, Elasticsearch, DynamoDB
+Cloud Platforms: AWS (EC2, S3, Lambda, RDS, CloudFormation), Google Cloud Platform, Microsoft Azure
+DevOps & Tools: Docker, Kubernetes, Jenkins, GitLab CI/CD, Terraform, Ansible, Prometheus, Grafana
+Testing: Jest, Cypress, Selenium, PyTest, JUnit, Mocha, Chai
+Version Control: Git, GitHub, GitLab, Bitbucket
+
+PROFESSIONAL EXPERIENCE
+
+Senior Software Engineer & Technical Lead | TechCorp Inc. | Seattle, WA | 2020 - Present
+• Lead a team of 8 engineers in developing and maintaining a high-traffic e-commerce platform serving 2M+ daily active users
+• Architected and implemented microservices-based backend system using Node.js and Docker, improving system scalability by 300%
+• Designed and built real-time analytics dashboard using React and WebSocket technology, providing instant insights to business stakeholders
+• Implemented comprehensive CI/CD pipeline using Jenkins and AWS, reducing deployment time from 2 hours to 15 minutes
+• Optimized database queries and implemented caching strategies, improving application response time by 60%
+• Mentored 5 junior developers, conducting code reviews and providing technical guidance on best practices
+• Collaborated with product managers and designers to define technical requirements and project timelines
+• Led migration from monolithic architecture to microservices, resulting in improved maintainability and team productivity
+
+Full Stack Developer | StartupXYZ | Seattle, WA | 2018 - 2020
+• Developed and maintained web applications using React, Node.js, and PostgreSQL for a growing SaaS platform
+• Built responsive user interfaces following modern design principles and accessibility standards
+• Implemented RESTful APIs and GraphQL endpoints to support mobile and web applications
+• Integrated third-party services including payment processing (Stripe), email marketing (SendGrid), and analytics (Google Analytics)
+• Participated in agile development process, including sprint planning, daily standups, and retrospectives
+• Wrote comprehensive unit and integration tests, achieving 90%+ code coverage
+• Collaborated with UX/UI designers to implement pixel-perfect designs and smooth user experiences
+• Contributed to technical documentation and knowledge sharing within the development team
+
+Software Developer | DevSolutions LLC | Portland, OR | 2016 - 2018
+• Developed custom web applications for clients using various technologies including PHP, MySQL, and jQuery
+• Built content management systems and e-commerce solutions tailored to client requirements
+• Implemented responsive designs ensuring cross-browser compatibility and mobile optimization
+• Worked directly with clients to gather requirements and provide technical consultation
+• Maintained and updated legacy applications, fixing bugs and adding new features
+• Participated in code reviews and followed established coding standards and best practices
+
+Junior Software Developer | CodeCraft Studios | Portland, OR | 2014 - 2016
+• Assisted in developing web applications using HTML, CSS, JavaScript, and PHP
+• Learned and applied software development best practices under senior developer mentorship
+• Contributed to bug fixes and feature implementations in existing applications
+• Participated in team meetings and project planning sessions
+• Gained experience with version control systems and collaborative development workflows
+
+EDUCATION
+
+Bachelor of Science in Computer Science | University of Washington | Seattle, WA | 2010 - 2014
+• Relevant Coursework: Data Structures and Algorithms, Software Engineering, Database Systems, Computer Networks, Operating Systems
+• Senior Project: Developed a machine learning-based recommendation system for e-commerce applications
+• GPA: 3.7/4.0, Dean's List (Fall 2013, Spring 2014)
+
+CERTIFICATIONS & ACHIEVEMENTS
+• AWS Certified Solutions Architect - Associate (2021)
+• Google Cloud Professional Cloud Architect (2020)
+• Certified Kubernetes Administrator (CKA) (2019)
+• Winner, TechCorp Hackathon 2021 - Best Innovation Award
+• Speaker at JavaScript Conference 2020 - "Building Scalable React Applications"
+• Open Source Contributor - Contributed to popular React libraries with 1000+ GitHub stars
+
+NOTABLE PROJECTS
+
+E-Commerce Platform Redesign | 2021
+• Led complete redesign and rewrite of legacy e-commerce platform serving 500K+ users
+• Technologies: React, Node.js, PostgreSQL, Redis, AWS
+• Improved page load times by 70% and increased conversion rates by 25%
+• Implemented advanced search functionality with Elasticsearch
+
+Real-Time Chat Application | 2020
+• Built scalable real-time messaging application supporting 10K+ concurrent users
+• Technologies: React, Socket.io, Node.js, MongoDB, Docker
+• Implemented features including file sharing, emoji reactions, and message encryption
+• Deployed on AWS using ECS and Application Load Balancer
+
+Personal Finance Tracker | 2019
+• Developed full-stack web application for personal financial management
+• Technologies: Vue.js, Express.js, MySQL, Chart.js
+• Features include expense tracking, budget planning, and financial goal setting
+• Implemented secure authentication and data encryption
+
+LANGUAGES
+• English (Native)
+• Mandarin Chinese (Fluent)
+• Spanish (Conversational)
+
+INTERESTS
+• Open Source Development
+• Machine Learning and AI
+• Rock Climbing and Hiking
+• Photography
+• Cooking and Food Culture
