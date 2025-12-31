@@ -1,0 +1,291 @@
+name: Dependency Updates
+
+on:
+  schedule:
+    # Run weekly on Mondays at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch: # Allow manual trigger
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  # Check for outdated dependencies
+  dependency-check:
+    name: Check Dependencies
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Check root dependencies
+      run: |
+        echo "## 📦 Root Dependencies Status" >> dependency-report.md
+        echo "" >> dependency-report.md
+        npm outdated --long || true
+        echo "" >> dependency-report.md
+        
+    - name: Check Lambda dependencies
+      run: |
+        echo "## 🔧 Lambda Dependencies Status" >> dependency-report.md
+        echo "" >> dependency-report.md
+        
+        for dir in lambda/*/; do
+          if [ -f "$dir/package.json" ]; then
+            echo "### $(basename "$dir")" >> dependency-report.md
+            echo "" >> dependency-report.md
+            cd "$dir"
+            npm outdated --long || true
+            echo "" >> dependency-report.md
+            cd - > /dev/null
+          fi
+        done
+        
+    - name: Check infrastructure dependencies
+      run: |
+        echo "## 🏗️ Infrastructure Dependencies Status" >> dependency-report.md
+        echo "" >> dependency-report.md
+        cd infrastructure
+        npm outdated --long || true
+        cd ..
+        
+    - name: Upload dependency report
+      uses: actions/upload-artifact@v4
+      with:
+        name: dependency-report
+        path: dependency-report.md
+        retention-days: 30
+
+  # Security audit
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Audit root dependencies
+      run: |
+        echo "## 🔒 Security Audit Report" > security-report.md
+        echo "" >> security-report.md
+        echo "### Root Dependencies" >> security-report.md
+        echo "" >> security-report.md
+        npm audit --audit-level=low || true
+        echo "" >> security-report.md
+        
+    - name: Audit Lambda dependencies
+      run: |
+        echo "### Lambda Dependencies" >> security-report.md
+        echo "" >> security-report.md
+        
+        for dir in lambda/*/; do
+          if [ -f "$dir/package.json" ]; then
+            echo "#### $(basename "$dir")" >> security-report.md
+            echo "" >> security-report.md
+            cd "$dir"
+            npm audit --audit-level=low || true
+            echo "" >> security-report.md
+            cd - > /dev/null
+          fi
+        done
+        
+    - name: Audit infrastructure dependencies
+      run: |
+        echo "### Infrastructure Dependencies" >> security-report.md
+        echo "" >> security-report.md
+        cd infrastructure
+        npm audit --audit-level=low || true
+        cd ..
+        
+    - name: Upload security report
+      uses: actions/upload-artifact@v4
+      with:
+        name: security-report
+        path: security-report.md
+        retention-days: 30
+
+  # Create update PR (if needed)
+  create-update-pr:
+    name: Create Update PR
+    runs-on: ubuntu-latest
+    needs: [dependency-check, security-audit]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Configure Git
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+    - name: Create update branch
+      run: |
+        branch_name="dependency-updates-$(date +%Y%m%d)"
+        git checkout -b "$branch_name"
+        echo "BRANCH_NAME=$branch_name" >> $GITHUB_ENV
+        
+    - name: Update root dependencies (patch and minor only)
+      run: |
+        echo "Updating root dependencies..."
+        npm update --save
+        
+    - name: Update Lambda dependencies
+      run: |
+        for dir in lambda/*/; do
+          if [ -f "$dir/package.json" ]; then
+            echo "Updating dependencies for $(basename "$dir")..."
+            cd "$dir"
+            npm update --save
+            cd - > /dev/null
+          fi
+        done
+        
+    - name: Update infrastructure dependencies
+      run: |
+        echo "Updating infrastructure dependencies..."
+        cd infrastructure
+        npm update --save
+        cd ..
+        
+    - name: Check for changes
+      id: changes
+      run: |
+        if git diff --quiet; then
+          echo "No dependency updates available"
+          echo "has_changes=false" >> $GITHUB_OUTPUT
+        else
+          echo "Dependencies updated"
+          echo "has_changes=true" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Commit and push changes
+      if: steps.changes.outputs.has_changes == 'true'
+      run: |
+        git add .
+        git commit -m "🔄 Update dependencies (automated)
+
+        - Updated npm dependencies to latest patch/minor versions
+        - Includes security updates where available
+        - All Lambda functions and infrastructure updated
+        
+        Generated by automated dependency update workflow"
+        
+        git push origin "$BRANCH_NAME"
+        
+    - name: Create Pull Request
+      if: steps.changes.outputs.has_changes == 'true'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const { repo, owner } = context.repo;
+          const result = await github.rest.pulls.create({
+            title: '🔄 Automated Dependency Updates',
+            owner,
+            repo,
+            head: process.env.BRANCH_NAME,
+            base: 'main',
+            body: [
+              '## 📦 Automated Dependency Updates',
+              '',
+              'This PR contains automated updates to project dependencies.',
+              '',
+              '### Changes Include:',
+              '- ⬆️ Updated npm dependencies to latest patch/minor versions',
+              '- 🔒 Security updates where available',
+              '- 🔧 Lambda function dependencies updated',
+              '- 🏗️ Infrastructure dependencies updated',
+              '',
+              '### Review Checklist:',
+              '- [ ] Check for any breaking changes in updated packages',
+              '- [ ] Verify all tests pass',
+              '- [ ] Test deployment in staging environment',
+              '- [ ] Review security audit results',
+              '',
+              '### Automated Checks:',
+              '- CI/CD pipeline will run automatically',
+              '- Security scans included',
+              '- Build verification performed',
+              '',
+              '---',
+              '*This PR was created automatically by the dependency update workflow.*'
+            ].join('\n')
+          });
+          
+          // Add labels
+          await github.rest.issues.addLabels({
+            owner,
+            repo,
+            issue_number: result.data.number,
+            labels: ['dependencies', 'automated', 'security']
+          });
+
+  # Summary
+  update-summary:
+    name: Update Summary
+    runs-on: ubuntu-latest
+    needs: [dependency-check, security-audit, create-update-pr]
+    if: always()
+    
+    steps:
+    - name: Download reports
+      uses: actions/download-artifact@v4
+      with:
+        name: dependency-report
+        path: ./reports/
+      continue-on-error: true
+        
+    - name: Download security report
+      uses: actions/download-artifact@v4
+      with:
+        name: security-report
+        path: ./reports/
+      continue-on-error: true
+        
+    - name: Summary
+      run: |
+        echo "## 📋 Dependency Update Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ "${{ needs.dependency-check.result }}" == "success" ]; then
+          echo "✅ **Dependency Check**: Completed" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Dependency Check**: Failed" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ "${{ needs.security-audit.result }}" == "success" ]; then
+          echo "✅ **Security Audit**: Completed" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Security Audit**: Failed" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ "${{ needs.create-update-pr.result }}" == "success" ]; then
+          echo "✅ **Update PR**: Created (if updates available)" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Update PR**: Failed" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "📊 **Reports**: Check the artifacts for detailed dependency and security reports" >> $GITHUB_STEP_SUMMARY

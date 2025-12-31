@@ -1,0 +1,265 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  # Code Quality Checks
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Check TypeScript
+      run: npx tsc --noEmit
+      
+    - name: Run ESLint
+      run: npm run lint
+      
+    - name: Check formatting (if Prettier is configured)
+      run: |
+        if [ -f ".prettierrc" ] || [ -f "prettier.config.js" ]; then
+          npx prettier --check .
+        else
+          echo "Prettier not configured, skipping format check"
+        fi
+      continue-on-error: true
+
+  # Test Coverage
+  test-coverage:
+    name: Test Coverage
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run tests with coverage
+      run: npm test -- --coverage --watchAll=false
+      
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  # Build Verification
+  build-check:
+    name: Build Verification
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build Next.js app
+      run: npm run build
+      env:
+        NEXT_PUBLIC_APP_URL: https://resume-generator-ai.solutionsynth.cloud
+        
+    - name: Check build size
+      run: |
+        echo "Build completed successfully!"
+        du -sh out/
+        
+  # Lambda Function Checks
+  lambda-checks:
+    name: Lambda Function Checks
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        lambda: [processFile, upload, generateResume, generateCoverLetter]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install Lambda dependencies
+      run: |
+        cd lambda/${{ matrix.lambda }}
+        npm ci
+        
+    - name: Check TypeScript compilation
+      run: |
+        cd lambda/${{ matrix.lambda }}
+        npx tsc --noEmit
+        
+    - name: Build Lambda function
+      run: |
+        cd lambda/${{ matrix.lambda }}
+        npm run build
+        
+    - name: Check bundle size
+      run: |
+        cd lambda/${{ matrix.lambda }}
+        echo "Lambda ${{ matrix.lambda }} build size:"
+        du -sh dist/
+
+  # Security Checks
+  security-check:
+    name: Security Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Run npm audit
+      run: npm audit --audit-level=moderate
+      continue-on-error: true
+      
+    - name: Check for hardcoded secrets
+      run: |
+        echo "Checking for potential secrets..."
+        if grep -r "sk-ant-api" . --exclude-dir=node_modules --exclude-dir=.git; then
+          echo "❌ Found potential API keys in code!"
+          exit 1
+        fi
+        if grep -r "lsv2_pt_" . --exclude-dir=node_modules --exclude-dir=.git; then
+          echo "❌ Found potential LangChain keys in code!"
+          exit 1
+        fi
+        echo "✅ No hardcoded secrets found"
+
+  # Documentation Check
+  docs-check:
+    name: Documentation Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Check required documentation
+      run: |
+        echo "Checking for required documentation files..."
+        
+        required_files=(
+          "README.md"
+          "docs/USER_GUIDE.md"
+          "docs/QUICK_START.md"
+          "PROJECT_STRUCTURE.md"
+        )
+        
+        for file in "${required_files[@]}"; do
+          if [ ! -f "$file" ]; then
+            echo "❌ Missing required file: $file"
+            exit 1
+          else
+            echo "✅ Found: $file"
+          fi
+        done
+        
+        echo "✅ All required documentation files present"
+        
+    - name: Check documentation links
+      run: |
+        echo "Checking for broken internal links in documentation..."
+        # Simple check for common markdown link patterns
+        find docs/ -name "*.md" -exec grep -l "\[.*\](.*\.md)" {} \; | while read file; do
+          echo "Checking links in $file"
+          grep -o "\[.*\](.*\.md)" "$file" | while read link; do
+            target=$(echo "$link" | sed 's/.*](\(.*\))/\1/')
+            if [[ "$target" == /* ]]; then
+              target="${target:1}"  # Remove leading slash
+            fi
+            if [ ! -f "$target" ] && [ ! -f "docs/$target" ]; then
+              echo "⚠️  Potentially broken link in $file: $target"
+            fi
+          done
+        done
+
+  # PR Summary
+  pr-summary:
+    name: PR Summary
+    runs-on: ubuntu-latest
+    needs: [code-quality, test-coverage, build-check, lambda-checks, security-check, docs-check]
+    if: always()
+    
+    steps:
+    - name: PR Check Summary
+      run: |
+        echo "## 📋 Pull Request Check Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ "${{ needs.code-quality.result }}" == "success" ]; then
+          echo "✅ **Code Quality**: Passed" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Code Quality**: Failed" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ "${{ needs.test-coverage.result }}" == "success" ]; then
+          echo "✅ **Test Coverage**: Passed" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Test Coverage**: Failed" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ "${{ needs.build-check.result }}" == "success" ]; then
+          echo "✅ **Build Verification**: Passed" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Build Verification**: Failed" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ "${{ needs.lambda-checks.result }}" == "success" ]; then
+          echo "✅ **Lambda Functions**: Passed" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Lambda Functions**: Failed" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ "${{ needs.security-check.result }}" == "success" ]; then
+          echo "✅ **Security Check**: Passed" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Security Check**: Failed" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ "${{ needs.docs-check.result }}" == "success" ]; then
+          echo "✅ **Documentation**: Passed" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Documentation**: Failed" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "🚀 **Ready for merge**: All checks must pass before merging to main" >> $GITHUB_STEP_SUMMARY
