@@ -24,6 +24,7 @@
 ### **For Developers:**
 - **[🏗️ Project Structure](PROJECT_STRUCTURE.md)** - Complete project organization
 - **[🚀 Deployment Scripts](scripts/deployment/)** - Automated deployment tools
+- **[🔐 GitHub Secrets Setup](docs/GITHUB_SECRETS_SETUP.md)** - Configure CI/CD credentials
 
 ## 🚀 Quick Start for Users
 

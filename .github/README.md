@@ -50,18 +50,24 @@ This directory contains automated workflows for the Resume Generator AI project.
 ## 🔧 Setup Requirements
 
 ### GitHub Secrets
+**📋 [Complete Setup Guide](../docs/GITHUB_SECRETS_SETUP.md)**
+
 Add these secrets to your GitHub repository:
 
 ```bash
-# AWS Credentials
+# AWS Credentials (Required)
 AWS_ACCESS_KEY_ID=your-aws-access-key
 AWS_SECRET_ACCESS_KEY=your-aws-secret-key
 
-# API Keys
+# AI API Keys (Required)
 ANTHROPIC_API_KEY=your-anthropic-api-key
+
+# Optional Monitoring Keys
 LANGCHAIN_API_KEY=your-langchain-api-key  # Optional
 LANGSMITH_API_KEY=your-langsmith-api-key  # Optional
 ```
+
+**⚠️ Important**: Follow the [detailed setup guide](../docs/GITHUB_SECRETS_SETUP.md) for step-by-step instructions on obtaining and configuring these credentials.
 
 ### Repository Settings
 1. **Enable Actions**: Go to Settings → Actions → General → Allow all actions

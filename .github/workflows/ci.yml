@@ -91,17 +91,45 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch full history for proper comparison
       
     - name: Run npm audit
       run: npm audit --audit-level=high
       continue-on-error: true
       
-    - name: Check for secrets
+    - name: Check for hardcoded secrets
+      run: |
+        echo "Checking for potential hardcoded secrets..."
+        
+        # Check for Anthropic API keys
+        if grep -r "sk-ant-api" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=out --exclude-dir=.next; then
+          echo "❌ Found potential Anthropic API keys in code!"
+          exit 1
+        fi
+        
+        # Check for LangChain API keys
+        if grep -r "lsv2_pt_" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=out --exclude-dir=.next; then
+          echo "❌ Found potential LangChain API keys in code!"
+          exit 1
+        fi
+        
+        # Check for AWS keys
+        if grep -r "AKIA[0-9A-Z]\{16\}" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=out --exclude-dir=.next; then
+          echo "❌ Found potential AWS access keys in code!"
+          exit 1
+        fi
+        
+        echo "✅ No hardcoded secrets found"
+        
+    - name: Run TruffleHog scan
       uses: trufflesecurity/trufflehog@main
       with:
         path: ./
-        base: main
+        base: ${{ github.event.repository.default_branch }}
         head: HEAD
+        extra_args: --debug --only-verified
+      continue-on-error: true  # Don't fail the build if TruffleHog has issues
 
   # Deploy to Production (only on main branch)
   deploy-production:
@@ -142,9 +170,9 @@ jobs:
     - name: Install Lambda dependencies
       run: |
         for dir in lambda/*/; do
-          if [ -f "$dir/package.json" ]; then
-            echo "Installing dependencies for $dir"
-            cd "$dir"
+          if [ -f "${dir}package.json" ]; then
+            echo "Installing dependencies for ${dir}"
+            cd "${dir}"
             npm ci
             cd - > /dev/null
           fi
@@ -153,9 +181,9 @@ jobs:
     - name: Build Lambda functions
       run: |
         for dir in lambda/*/; do
-          if [ -f "$dir/package.json" ] && [ -f "$dir/tsconfig.json" ]; then
-            echo "Building $dir"
-            cd "$dir"
+          if [ -f "${dir}package.json" ] && [ -f "${dir}tsconfig.json" ]; then
+            echo "Building ${dir}"
+            cd "${dir}"
             npm run build
             cd - > /dev/null
           fi

@@ -146,6 +146,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch full history
       
     - name: Run npm audit
       run: npm audit --audit-level=moderate
@@ -153,16 +155,33 @@ jobs:
       
     - name: Check for hardcoded secrets
       run: |
-        echo "Checking for potential secrets..."
-        if grep -r "sk-ant-api" . --exclude-dir=node_modules --exclude-dir=.git; then
+        echo "🔍 Checking for potential secrets..."
+        
+        # Check for Anthropic API keys (but exclude documentation examples)
+        if grep -r "sk-ant-api" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=out --exclude-dir=.next --exclude="*.md" --exclude="GITHUB_SECRETS_SETUP.md"; then
           echo "❌ Found potential API keys in code!"
           exit 1
         fi
-        if grep -r "lsv2_pt_" . --exclude-dir=node_modules --exclude-dir=.git; then
+        
+        # Check for LangChain API keys (but exclude documentation)
+        if grep -r "lsv2_pt_" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=out --exclude-dir=.next --exclude="*.md" --exclude="GITHUB_SECRETS_SETUP.md"; then
           echo "❌ Found potential LangChain keys in code!"
           exit 1
         fi
-        echo "✅ No hardcoded secrets found"
+        
+        # Check for AWS access keys
+        if grep -r "AKIA[0-9A-Z]\{16\}" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=out --exclude-dir=.next --exclude="*.md"; then
+          echo "❌ Found potential AWS access keys in code!"
+          exit 1
+        fi
+        
+        # Check for AWS secret keys pattern
+        if grep -r "[A-Za-z0-9/+=]\{40\}" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=out --exclude-dir=.next --exclude="*.md" | grep -v "package-lock.json" | head -1; then
+          echo "⚠️  Found potential long secrets (could be AWS secret keys)"
+          echo "Please review the above matches manually"
+        fi
+        
+        echo "✅ No obvious hardcoded secrets found"
 
   # Documentation Check
   docs-check:

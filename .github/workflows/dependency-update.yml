@@ -38,10 +38,10 @@ jobs:
         echo "" >> dependency-report.md
         
         for dir in lambda/*/; do
-          if [ -f "$dir/package.json" ]; then
-            echo "### $(basename "$dir")" >> dependency-report.md
+          if [ -f "${dir}package.json" ]; then
+            echo "### $(basename "${dir}")" >> dependency-report.md
             echo "" >> dependency-report.md
-            cd "$dir"
+            cd "${dir}"
             npm outdated --long || true
             echo "" >> dependency-report.md
             cd - > /dev/null
@@ -93,10 +93,10 @@ jobs:
         echo "" >> security-report.md
         
         for dir in lambda/*/; do
-          if [ -f "$dir/package.json" ]; then
-            echo "#### $(basename "$dir")" >> security-report.md
+          if [ -f "${dir}package.json" ]; then
+            echo "#### $(basename "${dir}")" >> security-report.md
             echo "" >> security-report.md
-            cd "$dir"
+            cd "${dir}"
             npm audit --audit-level=low || true
             echo "" >> security-report.md
             cd - > /dev/null
@@ -155,9 +155,9 @@ jobs:
     - name: Update Lambda dependencies
       run: |
         for dir in lambda/*/; do
-          if [ -f "$dir/package.json" ]; then
-            echo "Updating dependencies for $(basename "$dir")..."
-            cd "$dir"
+          if [ -f "${dir}package.json" ]; then
+            echo "Updating dependencies for $(basename "${dir}")..."
+            cd "${dir}"
             npm update --save
             cd - > /dev/null
           fi
