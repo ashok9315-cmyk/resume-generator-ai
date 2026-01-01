@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "clean": "if exist dist rmdir /s /q dist",
+    "clean": "rimraf dist",
     "prebuild": "npm run clean"
   },
   "dependencies": {
@@ -26,6 +26,7 @@
     "@types/aws-lambda": "^8.10.0",
     "@types/node": "^20.14.0",
     "@types/uuid": "^10.0.0",
+    "rimraf": "^5.0.0",
     "typescript": "^5.9.3"
   }
 }

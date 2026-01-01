@@ -154,23 +154,27 @@ jobs:
       continue-on-error: true
       
     - name: Check for hardcoded secrets
+      env:
+        ANTHROPIC_PATTERN: "sk-ant-api"
+        LANGCHAIN_PATTERN: "lsv2_pt_"
+        AWS_KEY_PATTERN: "AKIA[0-9A-Z]\\{16\\}"
       run: |
         echo "🔍 Checking for potential secrets..."
         
         # Check for Anthropic API keys (exclude workflow files and documentation)
-        if grep -r "sk-ant-api" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=out --exclude-dir=.next --exclude-dir=.github --exclude="*.md"; then
+        if grep -r "$ANTHROPIC_PATTERN" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=out --exclude-dir=.next --exclude-dir=.github --exclude="*.md"; then
           echo "❌ Found potential API keys in code!"
           exit 1
         fi
         
         # Check for LangChain API keys (exclude workflow files and documentation)
-        if grep -r "lsv2_pt_" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=out --exclude-dir=.next --exclude-dir=.github --exclude="*.md"; then
+        if grep -r "$LANGCHAIN_PATTERN" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=out --exclude-dir=.next --exclude-dir=.github --exclude="*.md"; then
           echo "❌ Found potential LangChain keys in code!"
           exit 1
         fi
         
         # Check for AWS access keys (exclude workflow files)
-        if grep -r "AKIA[0-9A-Z]\{16\}" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=out --exclude-dir=.next --exclude-dir=.github --exclude="*.md"; then
+        if grep -r "$AWS_KEY_PATTERN" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=out --exclude-dir=.next --exclude-dir=.github --exclude="*.md"; then
           echo "❌ Found potential AWS access keys in code!"
           exit 1
         fi
