@@ -1,9 +1,9 @@
 name: Scheduled Health Checks
 
 on:
-  schedule:
+  # schedule:
     # Run every 6 hours
-    - cron: '0 */6 * * *'
+    # - cron: '0 */6 * * *'
   workflow_dispatch: # Allow manual trigger
 
 env:
